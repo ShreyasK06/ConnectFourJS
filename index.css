@@ -1,0 +1,55 @@
+body {
+    font-family: "Permenant", cursive;
+    text-align: center;
+    background-color: gold;
+}
+
+h1 {
+    width: 620px;
+    border: 6px solid black;
+    border-radius: 10px;
+    margin-left: 22%;
+    color: black;
+}
+
+a {
+    color: black;
+}
+
+#board {
+    height: 540px;
+    width: 630px;
+
+    background-color: blue;
+    border: 10px solid navy;
+
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#resetBtn {
+    cursor: pointer;
+    font: bold;
+    font-family: "Permanent Marker", cursive;
+    font-size: 20px;
+    background-color: transparent;
+    border-radius: 20%;
+}
+
+.tile {
+    height: 70px;
+    width: 70px;
+    margin: 5px;
+    background-color: white;
+    border-radius: 50%;
+    border: 5px solid navy;
+}
+
+.red-piece {
+    background-color: red;
+}
+
+.yellow-piece {
+    background-color: yellow;
+}
