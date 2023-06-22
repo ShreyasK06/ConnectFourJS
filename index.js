@@ -1,5 +1,3 @@
-
-
 var playerRed = "R";
 var playerYellow = "Y";
 var currentPlayer = playerRed;
@@ -38,7 +36,6 @@ function setGame() {
         }
         board.push(row);
     }
-    resetBtn.addEventListener("click", resetGame);
 }
 
 
@@ -62,6 +59,8 @@ function setPeice() {
 
     if (currentPlayer == playerRed) {
         text.innerText = "YELLOW IT IS YOUR MOVE";
+        text.classList.remove('Red');
+        text.classList.add('Yellow');
         tile.classList.add("red-piece");
         console.log(r.toString() + "-" + c.toString());
         currentPlayer = playerYellow;
@@ -72,6 +71,8 @@ function setPeice() {
 
     } else if (currentPlayer == playerYellow) {
         text.innerText = "RED IT IS YOUR MOVE";
+        text.classList.remove('Yellow');
+        text.classList.add('Red');
         currentPlayer = playerRed;
         tile.classList.add("yellow-piece");
         r--;
@@ -221,6 +222,11 @@ function checkWin() {
 function setWinner(win) {
     let text = document.getElementById("winner");
     text.innerText = "THE WINNER IS " + win;
+    if (win == "YELLOW") {
+        text.classList.add('YellowWin');
+    } else {
+        text.classList.add('RedWin');
+    }
 }
 
 
