@@ -91,3 +91,13 @@ a {
 .RedWin {
     width: 43vh;
 }
+
+@media screen and (max-width:600px) {
+    h1 {
+        width: 70vh;
+    }
+
+    h2 {
+        margin-left: 100px;
+    }
+}
