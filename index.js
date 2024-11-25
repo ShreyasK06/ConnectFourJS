@@ -4,25 +4,29 @@ var currentPlayer = playerRed;
 var gameOver = false;
 var board;
 
-var rows = 6;
-var columns = 7;
+var rows = 5;
+var columns = 8;
 var currColumns;
-
+var moveCount = 0;
+var win ="";
 let twoPlayerGame = true;
 let aiGame = false;
 let available = [];
 let random;
+let checkingAhead = false;
+let tempOver = false;
 
 
 window.onload = function () {
     setGame();
+    document.getElementById("reset").addEventListener("click", resetGame);
+    document.getElementById("mode").addEventListener("click", setAIGame);
 }
 
 function setGame() {
     let text = document.getElementById("winner");
-    const resetBtn = document.querySelector("#resetBtn");
     board = [];
-    currColumns = [5, 5, 5, 5, 5, 5, 5]
+    currColumns = [4, 4, 4, 4, 4, 4, 4, 4]
     text.innerText = "RED IT IS YOUR MOVE";
     for (let r = 0; r < rows; r++) {
         let row = [];
@@ -38,9 +42,22 @@ function setGame() {
     }
 }
 
+function setAIGame(){
+    if(aiGame){
+        aiGame = false;
+        document.getElementById("mode").innerText = "TWO PLAYER MODE";
+        if(document.getElementById("winner").classList.contains('AI'))document.getElementById("winner").classList.remove('AI');
+        document.getElementById("winner").classList.add('TWO');
+    } else {
+        aiGame = true;
+        document.getElementById("mode").innerText = "AI MODE";
+        if(document.getElementById("winner").classList.contains('TWO'))document.getElementById("winner").classList.remove('TWO');
+        document.getElementById("winner").classList.add('AI');
+    }
+}
 
 function setPeice() {
-    if (gameOver) {
+    if (gameOver || (aiGame && currentPlayer == playerYellow)) {
         return;
     }
 
@@ -52,7 +69,6 @@ function setPeice() {
     if (r < 0) {
         return;
     }
-
     board[r][c] = currentPlayer;
     let tile = document.getElementById(r.toString() + "-" + c.toString());
     let text = document.getElementById("winner");
@@ -62,14 +78,20 @@ function setPeice() {
         text.classList.remove('Red');
         text.classList.add('Yellow');
         tile.classList.add("red-piece");
-        console.log(r.toString() + "-" + c.toString());
         currentPlayer = playerYellow;
         r--;
         currColumns[c] = r;
+        moveCount++;
+        if(moveCount >= 3){
+            checkWin();
+        }
+        if(aiGame){
+            if(!gameOver){
+                aiMove();
+            }
+        }
 
-        checkWin();
-
-    } else if (currentPlayer == playerYellow) {
+    } else if (currentPlayer == playerYellow && !aiGame) {
         text.innerText = "RED IT IS YOUR MOVE";
         text.classList.remove('Yellow');
         text.classList.add('Red');
@@ -77,172 +99,161 @@ function setPeice() {
         tile.classList.add("yellow-piece");
         r--;
         currColumns[c] = r;
-
         checkWin();
 
     }
 }
 
-
-
-function win(game, turn) {
-    // Horizontal Check
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < 4; c++) {
-            var board1 = game[r][c];
-            var board2 = game[r][c + 1];
-            var board3 = game[r][c + 2];
-            var board4 = game[r][c + 3];
-            if (board1 == turn && board2 == turn && board3 == turn && board4 == turn) {
-                return true;
-            }
-
+function aiMove() {
+    outputR = [];
+    outputC  = [];
+    let r =0;
+    let c =0;
+    let nextMove = checkNextMoveWin();
+    if(nextMove < 0){
+        let randomY = Math.floor(Math.random() * columns);
+        while(currColumns[randomY] < 0){
+            randomY = Math.floor(Math.random() * columns);
         }
+        c = randomY;
+        r = currColumns[randomY];
+    } else {
+        c = nextMove;
+        r = currColumns[nextMove];
     }
-    // Vertical Check
-    for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < columns; c++) {
-            var board1 = game[r][c];
-            var board2 = game[r + 1][c];
-            var board3 = game[r + 2][c];
-            var board4 = game[r + 3][c];
-            if (board1 == turn && board2 == turn && board3 == turn && board4 == turn) {
-                return true;
-            }
+    checkingAhead = false;
+    let tile = document.getElementById(r.toString() + "-" + c.toString());
+    let text = document.getElementById("winner");
+    board[r][c] = currentPlayer;
+    currentPlayer = playerRed;  
+    text.innerText = "RED IT IS YOUR MOVE";
+    text.classList.remove('Yellow');
+    text.classList.add('Red');
+    tile.classList.add("yellow-piece");
+    if (c < 0) {
+        return;
+    } 
+    r--;
+    currColumns[c] = r;
+    checkWin();
 
-        }
-    }
-    // Diagonal Left to Right Check
-    for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < columns - 3; c++) {
-            var board1 = game[r][c];
-            var board2 = game[r + 1][c + 1];
-            var board3 = game[r + 2][c + 2];
-            var board4 = game[r + 3][c + 3];
-            if (board1 == turn && board2 == turn && board3 == turn && board4 == turn) {
-                return true;
-            }
-
-        }
-    }
-    // Diagonal Right to Left Check
-    for (let r = 3; r < rows; r++) {
-        for (let c = 0; c < columns - 3; c++) {
-            var board1 = game[r][c];
-            var board2 = game[r - 1][c + 1];
-            var board3 = game[r - 2][c + 2];
-            var board4 = game[r - 3][c + 3];
-            if (board1 == turn && board2 == turn && board3 == turn && board4 == turn) {
-                return true;
-            }
-        }
-    }
 }
+
+function checkNextMoveWin(){
+    aval = [];
+    for(let x = 0; x < columns; x++){
+        if(currColumns[x] >= 0){
+            aval.push(x);
+        }
+    }
+    //Check Lose
+    for(i in aval){
+        currentPlayer = playerRed;
+        let r = currColumns[aval[i]];
+        let c = aval[i];
+        board[r][c] = currentPlayer;
+        checkingAhead = true;
+        checkWin();
+        board[r][c] = " ";
+        if(tempOver){
+            currentPlayer = playerYellow;
+            tempOver = false;
+            return aval[i];
+        }
+    }
+    //Check Win
+    for(i in aval){
+        currentPlayer = playerYellow;
+        let c = aval[i];
+        let r = currColumns[aval[i]];
+        board[r][c] = currentPlayer;
+        checkingAhead = true;
+        checkWin();
+        board[r][c] = " ";
+        if(tempOver){
+            currentPlayer = playerYellow;
+            tempOver = false;
+            return aval[i];
+        }
+    }
+    return -1;
+}
+
 
 
 function checkWin() {
-    // Horizontal Check
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < 4; c++) {
-            var board1 = board[r][c];
-            var board2 = board[r][c + 1];
-            var board3 = board[r][c + 2];
-            var board4 = board[r][c + 3];
-            if (board1 == playerRed && board2 == playerRed && board3 == playerRed && board4 == playerRed) {
-                console.log("Red");
-                setWinner("RED");
-                gameOver = true;
-            } else if (board1 == playerYellow && board2 == playerYellow && board3 == playerYellow && board4 == playerYellow) {
-                console.log("Yellow");
-                setWinner("YELLOW");
-                gameOver = true;
+    for(let r = 0; r < rows; r++){
+        for(let c = 0; c < columns; c++){
+            if(board[r][c] != " "){
+                if(c + 3 < columns && board[r][c] == board[r][c + 1] && board[r][c] == board[r][c + 2] && board[r][c] == board[r][c + 3]){
+                    setWin(r,c);
+                    return;
+                }
+                if(r + 3 < rows && board[r][c] == board[r + 1][c] && board[r][c] == board[r + 2][c] && board[r][c] == board[r + 3][c]){
+                    setWin(r,c);
+                    return;
+                }
+                if(r + 3 < rows && c + 3 < columns && board[r][c] == board[r + 1][c + 1] && board[r][c] == board[r + 2][c + 2] && board[r][c] == board[r + 3][c + 3]){
+                    setWin(r,c);
+                    return;
+                }
+                if(r - 3 >= 0 && c + 3 < columns && board[r][c] == board[r - 1][c + 1] && board[r][c] == board[r - 2][c + 2] && board[r][c] == board[r - 3][c + 3]){
+                    setWin(r,c);
+                    return;
+                }
             }
-
-        }
-    }
-    // Vertical Check
-    for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < columns; c++) {
-            var board1 = board[r][c];
-            var board2 = board[r + 1][c];
-            var board3 = board[r + 2][c];
-            var board4 = board[r + 3][c];
-            if (board1 == playerRed && board2 == playerRed && board3 == playerRed && board4 == playerRed) {
-                console.log("Red");
-                setWinner("RED");
-                gameOver = true;
-            } else if (board1 == playerYellow && board2 == playerYellow && board3 == playerYellow && board4 == playerYellow) {
-                console.log("Yellow");
-                setWinner("YELLOW");
-                gameOver = true;
-            }
-
-        }
-    }
-    // Diagonal Left to Right Check
-    for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < columns - 3; c++) {
-            var board1 = board[r][c];
-            var board2 = board[r + 1][c + 1];
-            var board3 = board[r + 2][c + 2];
-            var board4 = board[r + 3][c + 3];
-            if (board1 == playerRed && board2 == playerRed && board3 == playerRed && board4 == playerRed) {
-                console.log("Red");
-                setWinner("RED");
-                gameOver = true;
-            } else if (board1 == playerYellow && board2 == playerYellow && board3 == playerYellow && board4 == playerYellow) {
-                console.log("Yellow");
-                setWinner("YELLOW");
-                gameOver = true;
-            }
-
-        }
-    }
-    // Diagonal Right to Left Check
-    for (let r = 3; r < rows; r++) {
-        for (let c = 0; c < columns - 3; c++) {
-            var board1 = board[r][c];
-            var board2 = board[r - 1][c + 1];
-            var board3 = board[r - 2][c + 2];
-            var board4 = board[r - 3][c + 3];
-            if (board1 == playerRed && board2 == playerRed && board3 == playerRed && board4 == playerRed) {
-                console.log("Red");
-                setWinner("RED");
-                gameOver = true;
-            } else if (board1 == playerYellow && board2 == playerYellow && board3 == playerYellow && board4 == playerYellow) {
-                console.log("Yellow");
-                setWinner("YELLOW");
-                gameOver = true;
-            }
-
         }
     }
 }
 
-function setWinner(win) {
+function setWin(r,c){
+    win = board[r][c];
+    (currentPlayer);
+    if(!checkingAhead){
+        setWinner();
+        gameOver = true;
+    } else {
+        tempOver = true;
+    }
+}
+
+function setWinner() {
     let text = document.getElementById("winner");
-    text.innerText = "THE WINNER IS " + win;
-    if (win == "YELLOW") {
+    if (win == "Y") {
+        text.innerText = "THE WINNER IS YELLOW";
         text.classList.add('YellowWin');
     } else {
+        text.innerText = "THE WINNER IS RED";
         text.classList.add('RedWin');
     }
 }
 
 
 function resetGame() {
-    console.log("reset");
-    currColumns = [5, 5, 5, 5, 5, 5, 5]
+    board = [];
+    gameOver = false;
+    currColumns = [4, 4, 4, 4, 4, 4, 4, 4]
+    currentPlayer = playerRed;
+    document.getElementById("winner").innerText = "RED IT IS YOUR MOVE";
+    if(win == "YELLOW"){
+        document.getElementById("winner").classList.remove('YellowWin');
+    } else {
+        document.getElementById("winner").classList.remove('RedWin');
+    }
+    win = "";
     for (let r = 0; r < rows; r++) {
+        let row = [];
         for (let c = 0; c < columns; c++) {
+            row.push(" ");
             let tile = document.getElementById(r.toString() + "-" + c.toString())
             if (tile.classList.contains("red-piece")) {
-                console.log("red remove");
+                ("red remove");
                 tile.classList.remove("red-piece");
             } else if (tile.classList.contains("yellow-piece")) {
-                console.log("yellow remove");
+                ("yellow remove");
                 tile.classList.remove("yellow-piece");
             }
         }
+        board.push(row);
     }
 };
