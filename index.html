@@ -1,22 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CONNECT FOUR</title>
+    <title>Connect Four</title>
     <link rel="stylesheet" href="index.css">
-    <script src="index.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="index.js" defer></script>
 </head>
 
 <body>
-    <h1><a href="https://shreyask06.github.io/MyWebsite/" target="_parent">CONNET FOUR</a></h1>
-    <h2 id="winner"></h2>
-    <button id="reset">Reset</button>
-    <button id="mode">Switch Mode</button>
-    <div id="board"></div>
+    <div class="game-wrapper">
+        <header>
+            <div class="header-left">
+                <h1>Connect Four</h1>
+                <button id="theme-toggle" class="theme-btn" aria-label="Toggle dark/light mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+            <div class="game-controls">
+                <button id="reset" class="btn"><i class="fas fa-redo"></i> New Game</button>
+                <button id="mode" class="btn"><i class="fas fa-user-friends"></i> Two Player</button>
+            </div>
+        </header>
 
+        <div class="game-status">
+            <div id="player-turn" class="player-indicator">
+                <div class="current-player red"></div>
+                <p>Red's Turn</p>
+            </div>
+        </div>
+
+        <div class="board-container">
+            <!-- Main game board -->
+            <div class="board-frame">
+                <div id="board" class="board"></div>
+            </div>
+        </div>
+
+        <div id="game-message" class="game-message hidden">
+            <div class="message-content">
+                <h2 id="message-text">Red Wins!</h2>
+                <button id="play-again" class="btn">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confetti" class="confetti hidden"></div>
 </body>
 
 </html>
